@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Editor</title>
+    <style>
+        /* CSS styles go here */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+        .sidebar {
+            background-color: #555;
+            color: #fff;
+            width: 200px;
+            padding: 10px;
+            position: fixed;
+            left: 0;
+            top: 60px;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            margin-top: 0;
+        }
+        .tool-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+        }
+        .tool-btn:hover {
+            background-color: #444;
+        }
+        .color-picker {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .color-picker input[type="color"] {
+            width: 100%;
+            padding: 5px;
+        }
+        .line-width {
+            margin-top: 10px;
+        }
+        .line-width input[type="range"] {
+            width: 100%;
+        }
+        .editor-container {
+            margin-left: 200px; /* Adjusted for sidebar */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 100px);
+        }
+        .editor {
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Photo Editor</h1>
+    </header>
+    <nav>
+        <div class="dropdown">
+            <span class="dropbtn">File</span>
+            <div class="dropdown-content">
+                <a href="#" id="open">Open</a>
+                <a href="#" id="open-place">Open and Place</a>
+                <a href="#" id="new-file">New File</a>
+                <a href="#" id="import">Import</a>
+                <a href="#" id="export">Export</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <span class="dropbtn">Edit</span>
+            <div class="dropdown-content">
+                <a href="#" id="undo">Undo</a>
+                <a href="#" id="redo">Redo</a>
+                <a href="#" id="cut">Cut</a>
+                <a href="#" id="copy">Copy</a>
+                <a href="#" id="paste">Paste</a>
+            </div>
+        </div>
+        <a href="#" id="image">Image</a>
+        <a href="#" id="filter">Filter</a>
+        <a href="#" id="help">Help</a> <!-- Added Help placeholder -->
+    </nav>
+    <div class="sidebar">
+        <h2>Tools</h2>
+        <!-- Added placeholders for Text Tool, Recolor Tool, Shape Tool, Magic Wand Tool, Select Tool, Box Select Tool, Zoom In Tool, and Zoom Out Tool -->
+        <button class="tool-btn" onclick="changeTool('text')">Text Tool</button>
+        <button class="tool-btn" onclick="changeTool('recolor')">Recolor Tool</button>
+        <button class="tool-btn" onclick="changeTool('shape')">Shape Tool</button>
+        <button class="tool-btn" onclick="changeTool('magic-wand')">Magic Wand Tool</button>
+        <button class="tool-btn" onclick="changeTool('select')">Select Tool</button>
+        <button class="tool-btn" onclick="changeTool('box-select')">Box Select Tool</button>
+        <button class="tool-btn" onclick="changeTool('zoom-in')">Zoom In Tool</button>
+        <button class="tool-btn" onclick="changeTool('zoom-out')">Zoom Out Tool</button>
+        <div class="color-picker">
+            <input type="color" id="color-picker" onchange="changeColor(this.value)">
+        </div>
+        <div class="line-width">
+            <label for="line-width">Line Width:</label>
+            <input type="range" id="line-width" min="1" max="20" value="5" onchange="changeLineWidth(this.value)">
+        </div>
+    </div>
+    <div class="editor-container">
+        <div class="editor">
+            <canvas id="canvas" width="600" height="400"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript code goes here
+        // Get the canvas and context
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let currentTool = '';
+        let isPainting = false;
+        let lastX = 0;
+        let lastY = 0;
+        let lineWidth = 5;
+
+        // Function to change the current tool
+        function changeTool(tool) {
+            console.log(`Selected tool: ${tool}`);
+            currentTool = tool;
+        }
+
+        // Function to change color
+        function changeColor(color) {
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+        }
+
+        // Function to change line width
+        function changeLineWidth(width) {
+            lineWidth = width;
+            ctx.lineWidth = lineWidth;
+        }
+
+        // Event listeners for mouse movements
+        canvas.addEventListener('mousedown', startPaint);
+        canvas.addEventListener('mousemove', paint);
+        canvas.addEventListener('mouseup', stopPaint);
+        canvas.addEventListener('mouseleave', stopPaint);
+
+        // Start painting
+        function startPaint(event) {
+            if (currentTool === 'paint' || currentTool === 'erase') {
+                isPainting = true;
+                [lastX, lastY] = [event.offsetX, event.offsetY];
+            }
+        }
+
+        // Paint
+        function paint(event) {
+            if (isPainting && (currentTool === 'paint' || currentTool === 'erase')) {
+                ctx.lineCap = 'round'; // For smooth lines
+                ctx.lineJoin = 'round'; // For smooth lines
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(event.offsetX, event.offsetY);
+                ctx.stroke();
+                [lastX, lastY] = [event.offsetX, event.offsetY];
+            }
+        }
+
+        // Stop painting
+        function stopPaint() {
+            isPainting = false;
+        }
+
+        // File functionality
+        document.getElementById('open').addEventListener('click', function() {
+            console.log('Open file...');
+        });
+
+        document.getElementById('open-place').addEventListener('click', function() {
+            console.log('Open and place file...');
+        });
+
+        document.getElementById('new-file').addEventListener('click', function() {
+            console.log('Create new file...');
+        });
+
+        document.getElementById('import').addEventListener('click', function() {
+            console.log('Import file...');
+        });
+
+        document.getElementById('export').addEventListener('click', function() {
+            console.log('Export file...');
+        });
+
+        // Edit functionality
+        document.getElementById('undo').addEventListener('click', function() {
+            console.log('Undo...');
+        });
+
+        document.getElementById('redo').addEventListener('click', function() {
+            console.log('Redo...');
+        });
+
+        document.getElementById('cut').addEventListener('click', function() {
+            console.log('Cut...');
+        });
+
+        document.getElementById('copy').addEventListener('click', function() {
+            console.log('Copy...');
+        });
+
+        document.getElementById('paste').addEventListener('click', function() {
+            console.log('Paste...');
+        });
+
+        // Filter functionality
+        document.getElementById('filter').addEventListener('click', function() {
+            console.log('Apply filter...');
+        });
+
+        // Help functionality (placeholder)
+        document.getElementById('help').addEventListener('click', function() {
+            console.log('Help...');
+        });
+    </script>
+</body>
+</html>
